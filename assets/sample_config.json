@@ -1,0 +1,45 @@
+{
+  "tasks": {
+    "task1": {
+      "description": "EASY: Deep Navigation",
+      "hint": "The flag is buried somewhere in the web server directories. No locks, just searching.",
+      "expected_flag": "FLAG{t1_nav_pro}"
+    },
+    "task2": {
+      "description": "MEDIUM: Decoding & Hidden Clues",
+      "hint": "The /vault is locked. The admin left a password reminder in the system_config, but it is encoded in Base64.",
+      "expected_flag": "FLAG{t2_crypto_breaker}"
+    },
+    "task3": {
+      "description": "HARD: Logic & Decoys",
+      "hint": "Access the /secure_zone. Find the admin's pet name in the logs and reverse it. WARNING: Decoys active.",
+      "expected_flag": "FLAG{t3_logic_master}"
+    }
+  },
+  "filesystem": {
+    "var": {
+      "www": {
+        "html": {
+          "index.html": "<html>Welcome to the server.</html>",
+          "hidden_admin": {
+            "flag.txt": "FLAG{t1_nav_pro}"
+          }
+        }
+      }
+    },
+    "system_config.txt": "Vault Password Reminder: YWRtaW5fcGFzcw==",
+    "vault": {
+      "metadata": { "locked": true, "password": "admin_pass" },
+      "flag.txt": "FLAG{t2_crypto_breaker}"
+    },
+    "logs": {
+      "honeypot.log": "FLAG{THIS_IS_A_TRAP_DO_NOT_SUBMIT}",
+      "backup_old.txt": "Server restarted on Tuesday.",
+      "chat_history.log": "Admin: Hey, can someone feed Buster? I locked myself out of the secure_zone again."
+    },
+    "secure_zone": {
+      "metadata": { "locked": true, "password": "retsuB" },
+      "flag.txt": "FLAG{t3_logic_master}"
+    }
+  }
+}

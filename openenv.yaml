@@ -1,0 +1,10 @@
+name: legacy-ops-simulator
+version: 1.0.0
+description: A deterministic OpenEnv environment where an AI agent acts as an incident responder navigating a corrupted legacy server filesystem.
+author: CyberQA Defender Team
+entrypoint: src.interface:FlagshipEnv
+requirements: requirements.txt
+tasks:
+  - task1
+  - task2
+  - task3

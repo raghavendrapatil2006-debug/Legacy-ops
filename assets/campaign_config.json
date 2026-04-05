@@ -1,0 +1,39 @@
+{
+  "global_hint": "Welcome to the CyberQA Campaign. Find 3 flags. You may need to revisit old directories to find clues for new tasks. Start by finding the hidden_admin directory.",
+  "flags": {
+    "phase1": "FLAG{t1_nav_pro}",
+    "phase2": "FLAG{t2_crypto_breaker}",
+    "phase3": "FLAG{t3_logic_master}"
+  },
+  "filesystem": {
+    "var": {
+      "www": {
+        "html": {
+          "hidden_admin": {
+            "flag.txt": "FLAG{t1_nav_pro}",
+            "admin_notes.txt": {
+              "metadata": {"required_phase": 1},
+              "content": "Note to self: The /vault password is Base64 encoded. The cipher is: YWRtaW5fcGFzcw=="
+            }
+          }
+        }
+      }
+    },
+    "vault": {
+      "metadata": { "locked": true, "password": "admin_pass" },
+      "flag.txt": "FLAG{t2_crypto_breaker}"
+    },
+    "logs": {
+      "honeypot.log": "FLAG{THIS_IS_A_TRAP_DO_NOT_SUBMIT}",
+      "sys_error.log": {
+        "metadata": {"required_phase": 2},
+        "content": "CRITICAL: Backup moved to /secure_zone. Password is the admin's dog's name reversed. Check chat_history.log."
+      },
+      "chat_history.log": "Admin: Hey, can someone feed Buster? I locked myself out of the secure_zone again."
+    },
+    "secure_zone": {
+      "metadata": { "locked": true, "password": "retsuB" },
+      "flag.txt": "FLAG{t3_logic_master}"
+    }
+  }
+}

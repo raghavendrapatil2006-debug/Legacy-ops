@@ -1,0 +1,4 @@
+pydantic==2.12.5
+openai==2.30.0
+huggingface_hub==1.8.0
+pytest
