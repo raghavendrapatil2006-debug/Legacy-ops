@@ -1,32 +1,30 @@
-# Use the official Python 3.10 slim image for a lightweight footprint
+# Use the official Python 3.10 slim image
 FROM python:3.10-slim
 
-# Set environment variables to ensure Python output is logged immediately
-# and to force Gradio to listen on all network interfaces
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 
-# Install system dependencies (Git is often required for certain Python packages)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy only the requirements file first to leverage Docker caching
+# Copy requirements first for Docker caching
 COPY requirements.txt /app/
 
-# Upgrade pip and install the Python dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application code into the container
-# (This includes src/, assets/, app.py, etc.)
+# Copy application code
 COPY . /app/
 
-# Expose port 7860, which is the default for Gradio
+# Expose port
 EXPOSE 7860
 
-# Command to run the application
-CMD ["python", "app.py"]
+# Command to run the application using Uvicorn (FastAPI)
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]

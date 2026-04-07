@@ -1,166 +1,121 @@
 import gradio as gr
 import json
+import uvicorn
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+# Import your specific environment and actions
 from src.environment import LegacyOpsEnv
 from src.models import AgentAction
 
-# 1. Initialize the Environment Engine
+# =====================================================================
+# 1. INITIALIZE FASTAPI & ENVIRONMENT
+# =====================================================================
+app = FastAPI(title="Legacy Ops OpenEnv Server")
 env = LegacyOpsEnv(config_path="assets/campaign_config.json")
 
-# 2. Try to load the README for the sidebar
-try:
-    with open("README.md", "r", encoding="utf-8") as f:
-        readme_content = f.read()
-except FileNotFoundError:
-    readme_content = "*README.md not found. Please create it in the root directory.*"
+# Define strict Pydantic schemas for the Evaluator Bot
+class StepAction(BaseModel):
+    command: str
+    target: str = ""
 
-# 3. Helper Function: Format outputs exactly like OpenEnv
-def format_openenv_response(obs, msg="Step complete."):
-    """Formats the environment state into a strict OpenEnv JSON response."""
-    response_dict = {
+# =====================================================================
+# 2. STRICT OPENENV API ENDPOINTS (For the Automated Hackathon Judge)
+# =====================================================================
+@app.post("/reset")
+def api_reset():
+    """Strict OpenEnv /reset endpoint"""
+    obs = env.reset()
+    return {
         "observation": {
-            "cwd": obs.cwd,
-            "stdout": obs.stdout,
-            "stderr": obs.stderr,
-            "current_phase": env.current_phase
+            "cwd": getattr(obs, "cwd", ""),
+            "stdout": getattr(obs, "stdout", ""),
+            "stderr": getattr(obs, "stderr", ""),
+            "current_phase": getattr(env, "current_phase", 1)
         },
-        "reward": float(obs.reward),
-        "done": obs.done
+        "info": {}
     }
-    
-    # The top header text
-    header_str = f"**Reward:** {obs.reward} &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** {obs.done}"
-    # The raw JSON string for the code box
-    raw_json_str = json.dumps(response_dict, indent=2)
-    
-    return header_str, msg, raw_json_str
 
-# 4. Core API Functions
-def execute_step(action_json_str):
+@app.post("/step")
+def api_step(action: StepAction):
+    """Strict OpenEnv /step endpoint"""
+    agent_act = AgentAction(command=action.command, target=action.target)
+    obs = env.step(agent_act, {"command": action.command, "target": action.target})
+    
+    return {
+        "observation": {
+            "cwd": getattr(obs, "cwd", ""),
+            "stdout": getattr(obs, "stdout", ""),
+            "stderr": getattr(obs, "stderr", ""),
+            "current_phase": getattr(env, "current_phase", 1)
+        },
+        "reward": float(getattr(obs, "reward", 0.0)),
+        "done": getattr(obs, "done", getattr(env, "done", False)),
+        "info": {}
+    }
+
+# =====================================================================
+# 3. GRADIO UI (For You / Human Testing)
+# =====================================================================
+def execute_step_ui(action_json_str):
     try:
-        # Parse JSON string from UI to dict
         action_json = json.loads(action_json_str)
         cmd = action_json.get("command", "")
         tgt = action_json.get("target", "")
-    except Exception as e:
-        # Gracefully handle bad JSON from humans or AI
-        error_dict = {
-            "observation": {"cwd": env.cwd, "stdout": "", "stderr": f"SYSTEM ERROR: Invalid JSON. {str(e)}", "current_phase": env.current_phase},
-            "reward": env.grader.total_score,
-            "done": env.done
+        
+        act = AgentAction(command=cmd, target=tgt)
+        obs = env.step(act, action_json)
+        
+        obs_dict = {
+            "cwd": getattr(obs, "cwd", ""), 
+            "stdout": getattr(obs, "stdout", ""), 
+            "stderr": getattr(obs, "stderr", "")
         }
-        header = f"**Reward:** {env.grader.total_score} &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** {env.done}"
-        return header, "Error: Invalid JSON input.", json.dumps(error_dict, indent=2)
+        reward = float(getattr(obs, "reward", 0.0))
+        done = getattr(obs, "done", getattr(env, "done", False))
+        
+        return f"**Reward:** {reward} &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** {done}", json.dumps(obs_dict, indent=2)
+    except Exception as e:
+        return f"**Error**", str(e)
 
-    action = AgentAction(command=cmd, target=tgt)
-    
-    # Execute step: Pass BOTH the action object and the raw dictionary 
-    # to the backend so grader.py can check for repeated commands!
-    obs = env.step(action, action_json)
-    
-    return format_openenv_response(obs, "Step complete.")
-
-def reset_env():
+def reset_env_ui():
     obs = env.reset()
-    return format_openenv_response(obs, "Environment reset to initial state.")
-
-def get_state():
-    """Returns the current state without taking an action (Get State button)"""
-    mock_dict = {
-        "observation": {"cwd": env.cwd, "stdout": "[State retrieved - No action taken]", "stderr": "", "current_phase": env.current_phase},
-        "reward": float(env.grader.total_score),
-        "done": env.done
+    obs_dict = {
+        "cwd": getattr(obs, "cwd", ""), 
+        "stdout": getattr(obs, "stdout", ""), 
+        "stderr": getattr(obs, "stderr", "")
     }
-    header = f"**Reward:** {env.grader.total_score} &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** {env.done}"
-    return header, "State retrieved.", json.dumps(mock_dict, indent=2)
+    return "**Reward:** 0.0 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False", json.dumps(obs_dict, indent=2)
 
-
-# 5. Build the OpenEnv-Style Interface
-with gr.Blocks(title="CyberQA Agentic Environment", css=".gradio-container {max-width: 1400px !important;}") as demo:
+# Build the visual layout
+with gr.Blocks(title="Legacy Ops Testing UI", css=".gradio-container {max-width: 1400px !important;}") as demo:
+    gr.Markdown("### 🛡️ Legacy Ops Human Testing Panel")
     
     with gr.Row():
-        # ==============================================================
-        # LEFT SIDEBAR (Quick Start & Info)
-        # ==============================================================
-        with gr.Column(scale=1, variant="panel"):
-            gr.Markdown("### Quick Start")
-            gr.Markdown("**Connect to this environment**")
-            gr.Markdown("""
-            Connect from Python using `gradio_client`:
-            ```python
-            from gradio_client import Client
-            client = Client("Raghavendra-2006/Legacy-ops")
-            result = client.predict(
-                action_json_str, 
-                api_name="/step"
-            )
-            ```
-            """)
-            
-            gr.Markdown("**Contribute to this environment**")
-            gr.Markdown("Submit improvements via pull request on the Hugging Face Hub.")
-            
-            with gr.Accordion("README (Mission Lore & Clues)", open=False):
-                gr.Markdown(readme_content)
-
-        # ==============================================================
-        # RIGHT MAIN CONSOLE (Execution & Output)
-        # ==============================================================
-        with gr.Column(scale=3):
-            # Top Header (Reward and Done Status)
-            reward_done_header = gr.Markdown("**Reward:** 0.0 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False")
-            
-            # Action Input Box
+        with gr.Column(scale=1):
             action_input = gr.Code(
-                label="Action (JSON format)",
-                language="json",
+                label="Action (JSON format)", 
+                language="json", 
                 value='{\n  "command": "ls",\n  "target": "/"\n}'
             )
-            
-            # OpenEnv Style Buttons
             with gr.Row():
                 step_btn = gr.Button("Step", variant="primary")
                 reset_btn = gr.Button("Reset", variant="secondary")
-                state_btn = gr.Button("Get state", variant="secondary")
+                
+        with gr.Column(scale=2):
+            header = gr.Markdown("**Reward:** 0.0 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False")
+            output_box = gr.Code(label="Observation State", language="json", interactive=False)
             
-            # Status Indicator
-            status_indicator = gr.Textbox(label="Status", value="Ready.", interactive=False)
-            
-            # Raw JSON Response Output
-            raw_response_box = gr.Code(
-                label="Raw JSON response",
-                language="json",
-                interactive=False
-            )
+    # Wire up the buttons
+    step_btn.click(fn=execute_step_ui, inputs=[action_input], outputs=[header, output_box])
+    reset_btn.click(fn=reset_env_ui, inputs=[], outputs=[header, output_box])
+    demo.load(fn=reset_env_ui, inputs=[], outputs=[header, output_box])
 
-    # 6. Wire up the functionality & Expose precise API names
-    step_btn.click(
-        fn=execute_step, 
-        inputs=[action_input], 
-        outputs=[reward_done_header, status_indicator, raw_response_box],
-        api_name="step"
-    )
-    
-    reset_btn.click(
-        fn=reset_env, 
-        inputs=[], 
-        outputs=[reward_done_header, status_indicator, raw_response_box],
-        api_name="reset"
-    )
-    
-    state_btn.click(
-        fn=get_state, 
-        inputs=[], 
-        outputs=[reward_done_header, status_indicator, raw_response_box],
-        api_name="get_state"
-    )
+# Mount the Gradio UI directly onto the root path ("/") so it loads instantly
+app = gr.mount_gradio_app(app, demo, path="/")
 
-    # Auto-load the initial state on page refresh
-    demo.load(
-        fn=reset_env, 
-        inputs=[], 
-        outputs=[reward_done_header, status_indicator, raw_response_box]
-    )
-
+# =====================================================================
+# 4. SERVER LAUNCHER
+# =====================================================================
 if __name__ == "__main__":
-    # Changed 127.0.0.1 to 0.0.0.0 so Hugging Face Spaces can access it!
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    uvicorn.run(app, host="0.0.0.0", port=7860)
