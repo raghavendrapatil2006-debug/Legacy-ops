@@ -1,39 +1,34 @@
 {
-  "global_hint": "Welcome to the CyberQA Campaign. Find 3 flags. You may need to revisit old directories to find clues for new tasks. Start by finding the hidden_admin directory.",
-  "flags": {
-    "phase1": "FLAG{t1_nav_pro}",
-    "phase2": "FLAG{t2_crypto_breaker}",
-    "phase3": "FLAG{t3_logic_master}"
-  },
+  "global_hint": "System Breach Detected. Multiple logs exist. Verify targets before acting.",
+  "tasks": [
+    "Phase 1 (Recon): Locate the initial fragmented auth flag hidden in the vault.",
+    "Phase 2 (Crypto): Extract and decode the multi-layer base64/hex payload from the syslog.",
+    "Phase 3 (Privilege): Inspect the system environment variables to secure the root session.",
+    "Phase 4 (Integrity): Restore the corrupted nginx.conf file using the clean backup.",
+    "Phase 5 (Hardening): Lock down the /etc/shadow file permissions to strict 600.",
+    "Phase 6 (Purge): Quarantine and permanently remove the 'sysupdater' malware binary."
+  ],
   "filesystem": {
+    "etc": {
+      "vault": { "fragment.txt": { "content": "FLAG{fragmented_auth_bypassed}" } },
+      "nginx": { "nginx.conf": { "content": "listen 80;\n# CORRUPTED", "metadata": {"permissions": "644"} } },
+      "shadow": { "content": "root:$6$...:19000:0:99999:7:::", "metadata": {"permissions": "777"} }
+    },
     "var": {
-      "www": {
-        "html": {
-          "hidden_admin": {
-            "flag.txt": "FLAG{t1_nav_pro}",
-            "admin_notes.txt": {
-              "metadata": {"required_phase": 1},
-              "content": "Note to self: The /vault password is Base64 encoded. The cipher is: YWRtaW5fcGFzcw=="
-            }
-          }
-        }
+      "log": {
+        "auth.log": { "content": "SYSTEM_ALERT_PAYLOAD: REVDT1lfRkFLRV9GTEFHX0lHTk9SRQ==" },
+        "syslog.txt": { "content": "08:08 SYSTEM_ALERT_PAYLOAD: NDY0YzQxNDc3YjZkNzU2Yzc0Njk1ZjZjNjE3OTY1NzI1ZjYzNzI3OTcwNzQ2ZjVmNjM3MjYxNjM2YjY1NjQ3ZA==\n" }
       }
     },
-    "vault": {
-      "metadata": { "locked": true, "password": "admin_pass" },
-      "flag.txt": "FLAG{t2_crypto_breaker}"
-    },
-    "logs": {
-      "honeypot.log": "FLAG{THIS_IS_A_TRAP_DO_NOT_SUBMIT}",
-      "sys_error.log": {
-        "metadata": {"required_phase": 2},
-        "content": "CRITICAL: Backup moved to /secure_zone. Password is the admin's dog's name reversed. Check chat_history.log."
-      },
-      "chat_history.log": "Admin: Hey, can someone feed Buster? I locked myself out of the secure_zone again."
-    },
-    "secure_zone": {
-      "metadata": { "locked": true, "password": "retsuB" },
-      "flag.txt": "FLAG{t3_logic_master}"
-    }
+    "mnt": { "backups": { "nginx_clean.conf": { "content": "listen 80;\nserver_name secure.local;" } } },
+    "tmp": { "sysupdater": { "content": "ELF... malicious payload...", "metadata": {"is_malware": true} }, "safe_cache.tmp": { "content": "cache data..." } }
+  },
+  "flags": {
+    "phase1": "FLAG{fragmented_auth_bypassed}",
+    "phase2": "FLAG{multi_layer_crypto_cracked}",
+    "phase3": "FLAG{root_environment_secured}",
+    "phase4": "FLAG{integrity_recovered}",
+    "phase5": "FLAG{access_control_restored}",
+    "phase6": "FLAG{threat_neutralized}"
   }
 }

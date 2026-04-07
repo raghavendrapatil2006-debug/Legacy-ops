@@ -1,6 +1,3 @@
-agent.py
-name_of_secret_folder/
-.env
 .venv
 venv
 __pycache__
