@@ -3,7 +3,6 @@ import re
 import logging
 from openai import OpenAI
 
-# Try to import user-provided environment, but do not crash on missing dependencies
 try:
     from src.environment import LegacyOpsEnv
     from src.models import AgentAction
@@ -11,9 +10,6 @@ except ImportError:
     LegacyOpsEnv = None
     AgentAction = None
 
-# =====================================================================
-# 1. STRICT ENVIRONMENT VARIABLES & INITIALIZATION
-# =====================================================================
 HF_TOKEN = os.getenv("HF_TOKEN")
 if HF_TOKEN is None:
     raise ValueError("HF_TOKEN environment variable is required")
@@ -24,9 +20,6 @@ MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
 client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-# =====================================================================
-# 2. STRICT LOGGING FORMATTERS (Do not modify)
-# =====================================================================
 def log_start(task_name: str, env_name: str, model: str):
     print(f"[START] task={task_name} env={env_name} model={model}", flush=True)
 
@@ -41,9 +34,6 @@ def log_end(success: bool, total_steps: int, rewards_list: list):
     rewards_str = ",".join([f"{r:.2f}" for r in rewards_list])
     print(f"[END] success={succ_str} steps={total_steps} rewards={rewards_str}", flush=True)
 
-# =====================================================================
-# 3. LLM INTERFACE
-# =====================================================================
 SYSTEM_PROMPT = """
 You are an elite incident response agent connected to a compromised Linux server.
 Find flags and execute: `submit_flag <THE_FLAG>`.
@@ -62,13 +52,9 @@ def get_action(context: str) -> str:
     )
     return response.choices[0].message.content.strip().replace("`", "")
 
-# =====================================================================
-# 4. MAIN INFERENCE LOOP
-# =====================================================================
 def run_inference():
     task = "legacy_ops_ctf"
     benchmark = "legacy-ops-v1"
-    
     success = False
     step_num = 1
     rewards = []
@@ -80,7 +66,6 @@ def run_inference():
         from src.environment import LegacyOpsEnv
         env = LegacyOpsEnv(config_path="assets/campaign_config.json")
         obs = env.reset()
-
         history = str(obs) + "\n"
         done = False
         
@@ -92,7 +77,6 @@ def run_inference():
             
             try:
                 action_str = get_action(history)
-                
                 try:
                     from src.models import AgentAction
                     parts = action_str.split(" ", 1)
@@ -129,7 +113,6 @@ def run_inference():
             
             if step_crashed:
                 break
-                
             step_num += 1
             
         if done and not error_msg:
@@ -137,14 +120,12 @@ def run_inference():
 
     except Exception:
         pass
-        
     finally:
         if env is not None and hasattr(env, 'close'):
             try:
                 env.close()
             except Exception:
                 pass 
-                
         total_steps = len(rewards)
         log_end(success=success, total_steps=total_steps, rewards_list=rewards)
 
