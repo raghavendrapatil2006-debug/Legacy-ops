@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "legacy-ops"
+version = "1.0.0"
+description = "Legacy Ops OpenEnv Environment"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
