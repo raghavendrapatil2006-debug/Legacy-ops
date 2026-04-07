@@ -7,8 +7,21 @@ name = "legacy-ops"
 version = "1.0.0"
 description = "Legacy Ops OpenEnv Environment"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core>=0.2.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "gradio>=5.16.0",
+    "gradio_client>=0.10.0",
+    "openai>=1.14.0",
+    "google-genai>=0.1.0",
+    "pydantic>=2.0.0"
+]
+
+[project.scripts]
+server = "server.app:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["src*", "server*"]
