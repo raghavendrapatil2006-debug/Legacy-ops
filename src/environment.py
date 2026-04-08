@@ -2,6 +2,7 @@ import json
 import posixpath
 import base64
 from src.models import AgentAction
+from src.grader import grade_task_1, grade_task_2, grade_task_3
 
 class LegacyOpsEnv:
     def __init__(self, config_path="assets/campaign_config.json"):
@@ -11,14 +12,13 @@ class LegacyOpsEnv:
         self.filesystem = self.config.get("filesystem", {})
         self.global_hint = self.config.get("global_hint", "System Breach Detected.")
         
-        # Hardcoded expected flags matching openenv.yaml
         self.expected_flags = [
-            "FLAG{fragmented_auth_bypassed}",    # Phase 0
-            "FLAG{multi_layer_crypto_cracked}",  # Phase 1
-            "FLAG{root_environment_secured}",    # Phase 2
-            "FLAG{integrity_recovered}",         # Phase 3
-            "FLAG{access_control_restored}",     # Phase 4
-            "FLAG{threat_neutralized}"           # Phase 5
+            "FLAG{fragmented_auth_bypassed}",
+            "FLAG{multi_layer_crypto_cracked}",
+            "FLAG{root_environment_secured}",
+            "FLAG{integrity_recovered}",
+            "FLAG{access_control_restored}",
+            "FLAG{threat_neutralized}"
         ]
         self.reset()
 
@@ -63,8 +63,10 @@ class LegacyOpsEnv:
         target = getattr(action, "target", "")
         
         self.stdout, self.stderr = "", ""
-        step_reward = 0.0  # SAFE SCORING: No negative penalties
         target_path = posixpath.normpath(posixpath.join(self.cwd, target or "")).lstrip('/')
+
+        # Calculate score BEFORE action
+        prev_score = grade_task_1(self) + grade_task_2(self) + grade_task_3(self)
 
         if cmd == "ls":
             node = self._get_fs_node(target_path)
@@ -113,26 +115,19 @@ class LegacyOpsEnv:
                 self.stdout = "STATE UPDATE: Malware removed. Validation: FLAG{threat_neutralized}"
             else: self.stderr = f"rm: cannot remove '{target}'"
 
-        # ==========================================
-        # FLAG SUBMISSION LOGIC
-        # ==========================================
         elif cmd == "submit_flag":
             try:
                 expected_flag = self.expected_flags[self.current_phase]
                 
-                # Check narrative constraints
                 if self.current_phase == 3 and not self.nginx_restored:
                     self.stderr = "VALIDATION FAILED: nginx.conf state still corrupted."
                 elif self.current_phase == 4 and not self.shadow_secured:
                     self.stderr = "VALIDATION FAILED: /etc/shadow vulnerable."
                 elif self.current_phase == 5 and not self.malware_removed:
                     self.stderr = "VALIDATION FAILED: Malware 'sysupdater' still active."
-                
                 elif target == expected_flag:
-                    step_reward = 0.15 # Award exactly 0.15 as specified in openenv.yaml
                     self.current_phase += 1
                     self.stdout = f"[SUCCESS] Step {self.current_phase}/6 complete."
-                    
                     if self.current_phase >= 6:
                         self.stdout += " 🏆 MISSION SECURED."
                         self.done = True
@@ -140,11 +135,12 @@ class LegacyOpsEnv:
                     self.stderr = "SUBMISSION FAILED: Invalid flag."
             except IndexError:
                 self.stderr = "ERROR: All phases complete."
-
         else:
-            if cmd not in ["grep", "hex_decode"]: # Ignored helpers to save space
+            if cmd not in ["grep", "hex_decode"]:
                 self.stderr = f"bash: {cmd}: command not found"
 
-        self.reward = step_reward
-        self.total_reward += step_reward
+        # Calculate score AFTER action to give agent the difference as a step reward
+        new_score = grade_task_1(self) + grade_task_2(self) + grade_task_3(self)
+        self.reward = new_score - prev_score 
+        self.total_reward = new_score
         return self

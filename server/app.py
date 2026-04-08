@@ -25,26 +25,15 @@ def api_step(action: StepAction):
     return {"observation": {"cwd": getattr(obs, "cwd", "/"), "stdout": getattr(obs, "stdout", ""), "stderr": getattr(obs, "stderr", ""), "current_phase": getattr(env, "current_phase", 0)}, "reward": float(getattr(obs, "reward", 0.0)), "done": getattr(obs, "done", getattr(env, "done", False)), "info": {}}
 
 MISSION_README = """
-### 🚨 GLOBAL HINT
-**System Breach Detected.** Multiple logs exist. Verify targets before acting.
-
-### 🎯 THE 3 MAIN TASKS (6 Internal Steps)
-**TASK 1: DISCOVERY (0.33 points)**
-* *Step 1 (Recon):* Locate the fragmented auth flag hidden in the vault.
-* *Step 2 (Crypto):* Decode the multi-layer base64/hex payload from syslog.
-
-**TASK 2: REMEDIATION (0.33 points)**
-* *Step 3 (Privilege):* Inspect the system environment variables for the root session.
-* *Step 4 (Integrity):* Restore the corrupted `nginx.conf` file using the clean backup.
-
-**TASK 3: CLEANUP (0.34 points)**
-* *Step 5 (Hardening):* Lock down `/etc/shadow` file permissions to strict `600`.
-* *Step 6 (Purge):* Quarantine and permanently remove the `sysupdater` malware.
+### 🎯 THE 3 MAIN TASKS (Graded via Custom Python)
+**TASK 1: DISCOVERY** (Phase 1 & 2)
+**TASK 2: REMEDIATION** (Phase 3 & 4)
+**TASK 3: CLEANUP** (Phase 5 & 6)
 
 ### ⚠️ RULES & SCORING
 * **Progression:** Submit flags using `{"command": "submit_flag", "target": "FLAG{...}"}`.
-* **Milestone Scoring:** You receive points *only* when a full Task (2 steps) is completed. 
-* **Safe Environment:** There are NO negative penalties for invalid commands, but invalid state changes (like deleting safe files) will block progression.
+* **Milestone Scoring:** Graders return 0.25 for partial completion and 0.75 for full task completion.
+* **Safe Environment:** No negative penalties applied.
 """
 
 def execute_step_ui(action_json_str):
@@ -69,8 +58,8 @@ def reset_env_ui():
 def get_state_ui():
     state_info = {
         "info": "Current environment state fetched.",
-        "current_phase_completed": getattr(env, "current_phase", 0),
-        "total_reward_accumulated": float(getattr(env, "total_reward", 0.0))
+        "current_phase": getattr(env, "current_phase", 0),
+        "total_reward": float(getattr(env, "total_reward", 0.0))
     }
     return "State retrieved.", json.dumps(state_info, indent=2)
 
@@ -96,11 +85,7 @@ with gr.Blocks(title="CyberQA Agentic Environment", css=".gradio-container {max-
 
 app = gr.mount_gradio_app(app, demo, path="/")
 
-# ==========================================
-# OPENENV SERVER LAUNCHER (CRITICAL FIX)
-# ==========================================
 def main():
-    """Required main function for OpenEnv multi-mode deployment"""
     uvicorn.run(app, host="0.0.0.0", port=7860)
 
 if __name__ == "__main__":
