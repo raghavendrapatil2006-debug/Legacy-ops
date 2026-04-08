@@ -1,32 +1,41 @@
-spec_version: "1.0"
-name: "cyberqa"
-version: "1.0.0"
-description: "CyberQA Legacy Ops"
+spec_version: 1
+name: cyberqa
+type: space
+runtime: fastapi
 
-entrypoint: "env.py"
+tasks:
+  - id: "phase_1"
+    name: "Phase 1: Recon"
+    description: "Recover the first authentication flag"
+    difficulty: "easy"
+    grader: "grade_phase_1"
 
-env_spec:
-  observation_type: "json"
-  action_space:
-    - "ls"
-    - "cd"
-    - "cat"
-    - "decode"
-    - "env"
-    - "cp"
-    - "chmod"
-    - "rm"
-    - "submit_flag"
+  - id: "phase_2"
+    name: "Phase 2: Crypto"
+    description: "Decode the crypto flag"
+    difficulty: "easy"
+    grader: "grade_phase_2"
 
-evaluation:
-  grader_file: "grader.py"
-  baseline_file: "baseline.py"
-  task_file: "task.py"
+  - id: "phase_3"
+    name: "Phase 3: Privilege"
+    description: "Find the root environment flag"
+    difficulty: "medium"
+    grader: "grade_phase_3"
 
-variables:
-  - name: "API_BASE_URL"
-    description: "LLM API Endpoint"
-  - name: "MODEL_NAME"
-    description: "Identifier of the model to be used"
-  - name: "HF_TOKEN"
-    description: "Hugging Face API token"
+  - id: "phase_4"
+    name: "Phase 4: Integrity"
+    description: "Restore nginx integrity"
+    difficulty: "medium"
+    grader: "grade_phase_4"
+
+  - id: "phase_5"
+    name: "Phase 5: Hardening"
+    description: "Secure shadow access control"
+    difficulty: "medium"
+    grader: "grade_phase_5"
+
+  - id: "phase_6"
+    name: "Phase 6: Purge"
+    description: "Remove malware and neutralize threat"
+    difficulty: "hard"
+    grader: "grade_phase_6"

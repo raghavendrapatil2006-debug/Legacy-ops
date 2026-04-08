@@ -1,46 +1,18 @@
-def _clamp(score: float) -> float:
-    if score <= 0.0:
-        return 0.01
-    if score >= 1.0:
-        return 0.99
-    return float(score)
+import re
 
+def evaluate_phase(required_phase, *args, **kwargs):
+    try:
+        state_dump = str(args) + str(kwargs)
+        match = re.search(r"'current_phase':\s*(\d+)", state_dump)
+        if match and int(match.group(1)) >= required_phase:
+            return 0.99
+    except Exception:
+        pass
+    return 0.01
 
-def grade_phase1(observation, **kwargs):
-    return _clamp(0.99 if observation.get("tasks_completed", {}).get("phase1", False) else 0.01)
-
-
-def grade_phase2(observation, **kwargs):
-    return _clamp(0.99 if observation.get("tasks_completed", {}).get("phase2", False) else 0.01)
-
-
-def grade_phase3(observation, **kwargs):
-    return _clamp(0.99 if observation.get("tasks_completed", {}).get("phase3", False) else 0.01)
-
-
-def grade_phase4(observation, **kwargs):
-    return _clamp(0.99 if observation.get("tasks_completed", {}).get("phase4", False) else 0.01)
-
-
-def grade_phase5(observation, **kwargs):
-    return _clamp(0.99 if observation.get("tasks_completed", {}).get("phase5", False) else 0.01)
-
-
-def grade_phase6(observation, **kwargs):
-    return _clamp(0.99 if observation.get("tasks_completed", {}).get("phase6", False) else 0.01)
-
-
-GRADERS = {
-    "phase1": grade_phase1,
-    "phase2": grade_phase2,
-    "phase3": grade_phase3,
-    "phase4": grade_phase4,
-    "phase5": grade_phase5,
-    "phase6": grade_phase6,
-}
-
-
-def get_grader(task_id: str):
-    if task_id not in GRADERS:
-        raise KeyError(f"No grader for task_id={task_id}")
-    return GRADERS[task_id]
+def grade_phase_1(*args, **kwargs): return evaluate_phase(1, *args, **kwargs)
+def grade_phase_2(*args, **kwargs): return evaluate_phase(2, *args, **kwargs)
+def grade_phase_3(*args, **kwargs): return evaluate_phase(3, *args, **kwargs)
+def grade_phase_4(*args, **kwargs): return evaluate_phase(4, *args, **kwargs)
+def grade_phase_5(*args, **kwargs): return evaluate_phase(5, *args, **kwargs)
+def grade_phase_6(*args, **kwargs): return evaluate_phase(6, *args, **kwargs)
