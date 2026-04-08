@@ -1,44 +1,25 @@
 name: cyberqa
 version: "1.0.0"
-description: "CyberQA Legacy Ops"
+description: CyberQA Legacy Ops
+
+endpoints:
+  health: /
+  reset: /reset
+  step: /step
+  state: /state
+  tasks: /tasks
+  grader: /grader
 
 tasks:
   - id: phase_1
-    difficulty: easy
-    description: "Recover the first authentication flag"
-
+    description: Recover the first authentication flag
   - id: phase_2
-    difficulty: easy
-    description: "Decode the crypto flag"
-
+    description: Decode the crypto flag
   - id: phase_3
-    difficulty: medium
-    description: "Find the root environment flag"
-
+    description: Find the root environment flag
   - id: phase_4
-    difficulty: medium
-    description: "Restore nginx integrity"
-
+    description: Restore nginx integrity
   - id: phase_5
-    difficulty: medium
-    description: "Secure shadow access control"
-
+    description: Secure shadow access control
   - id: phase_6
-    difficulty: hard
-    description: "Remove malware and neutralize threat"
-
-api:
-  reset: POST /reset
-  step: POST /step
-  state: GET /state
-  grader: POST /grader
-  tasks: GET /tasks
-  baseline: GET /baseline
-
-baseline_scores:
-  phase_1: 0.80
-  phase_2: 0.82
-  phase_3: 0.85
-  phase_4: 0.87
-  phase_5: 0.89
-  phase_6: 0.91
+    description: Remove malware and neutralize threat
