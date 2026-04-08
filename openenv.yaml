@@ -1,29 +1,44 @@
-spec_version: 1
 name: cyberqa
-type: space
-runtime: fastapi
+version: "1.0.0"
+description: "CyberQA Legacy Ops"
 
 tasks:
-  - id: "phase_1"
-    name: "Phase 1: Recon"
-    grader: "grade_phase_1"
+  - id: phase_1
+    difficulty: easy
+    description: "Recover the first authentication flag"
 
-  - id: "phase_2"
-    name: "Phase 2: Crypto"
-    grader: "grade_phase_2"
+  - id: phase_2
+    difficulty: easy
+    description: "Decode the crypto flag"
 
-  - id: "phase_3"
-    name: "Phase 3: Privilege"
-    grader: "grade_phase_3"
+  - id: phase_3
+    difficulty: medium
+    description: "Find the root environment flag"
 
-  - id: "phase_4"
-    name: "Phase 4: Integrity"
-    grader: "grade_phase_4"
+  - id: phase_4
+    difficulty: medium
+    description: "Restore nginx integrity"
 
-  - id: "phase_5"
-    name: "Phase 5: Hardening"
-    grader: "grade_phase_5"
+  - id: phase_5
+    difficulty: medium
+    description: "Secure shadow access control"
 
-  - id: "phase_6"
-    name: "Phase 6: Purge"
-    grader: "grade_phase_6"
+  - id: phase_6
+    difficulty: hard
+    description: "Remove malware and neutralize threat"
+
+api:
+  reset: POST /reset
+  step: POST /step
+  state: GET /state
+  grader: POST /grader
+  tasks: GET /tasks
+  baseline: GET /baseline
+
+baseline_scores:
+  phase_1: 0.80
+  phase_2: 0.82
+  phase_3: 0.85
+  phase_4: 0.87
+  phase_5: 0.89
+  phase_6: 0.91

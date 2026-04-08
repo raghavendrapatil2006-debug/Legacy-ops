@@ -1,115 +1,132 @@
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
-import posixpath
-import base64
+
+from src.environment import LegacyOpsEnv
+from grader import (
+    grade_phase_1, grade_phase_2, grade_phase_3,
+    grade_phase_4, grade_phase_5, grade_phase_6
+)
 
 app = FastAPI(title="CyberQA API")
 
+# Global environment
+env = LegacyOpsEnv()
+
+
+# -------------------------
+# MODELS
+# -------------------------
 class Action(BaseModel):
     command: str = ""
     target: str = ""
 
-# Game state
-env_state = {
-    "cwd": "/",
-    "stdout": "--- MISSION START ---\nSystem Breach Detected.",
-    "stderr": "",
-    "current_phase": 0,
-    "nginx_restored": False,
-    "shadow_secured": False,
-    "malware_removed": False,
-    "done": False,
-    "total_reward": 0.0
-}
 
-expected_flags = [
-    "FLAG{fragmented_auth_bypassed}",
-    "FLAG{multi_layer_crypto_cracked}",
-    "FLAG{root_environment_secured}",
-    "FLAG{integrity_recovered}",
-    "FLAG{access_control_restored}",
-    "FLAG{threat_neutralized}"
-]
+class GradeRequest(BaseModel):
+    task_id: str
+    state: dict | None = None
 
-filesystem = {
-    "vault": {"hidden_auth.txt": {"content": "FLAG{fragmented_auth_bypassed}"}},
-    "var": {"log": {"syslog": {"content": "RkxBR3ttdWx0aV9sYXllcl9jcnlwdG9fY3JhY2tlZH0="}}},
-    "etc": {
-        "nginx": {"nginx_clean.conf": {"content": "clean"}, "nginx.conf": {"content": "corrupt"}},
-        "shadow": {"content": "shadow_file"}
-    },
-    "usr": {"bin": {"sysupdater": {"content": "malware"}}}
-}
 
-def _get_fs_node(path, fs):
-    if path in ["/", ""]: return fs
-    parts = [p for p in path.strip("/").split("/") if p]
-    curr = fs
-    for p in parts:
-        if isinstance(curr, dict) and p in curr: curr = curr[p]
-        else: return None
-    return curr
-
+# -------------------------
+# ENV ENDPOINTS
+# -------------------------
 @app.post("/reset")
 def reset():
-    env_state.update({
-        "cwd": "/", "stdout": "--- MISSION START ---\nSystem Breach Detected.",
-        "stderr": "", "current_phase": 0, "nginx_restored": False,
-        "shadow_secured": False, "malware_removed": False, "done": False
-    })
-    obs = {"cwd": env_state["cwd"], "stdout": env_state["stdout"], "stderr": env_state["stderr"], "current_phase": 0}
-    return {"observation": obs, "info": {}}
+    env.reset()
+    return {
+        "observation": {
+            "cwd": env.cwd,
+            "stdout": env.stdout,
+            "stderr": env.stderr,
+            "current_phase": env.current_phase
+        },
+        "info": {}
+    }
+
 
 @app.post("/step")
 def step(action: Action):
-    if env_state["done"]:
-        obs = {"cwd": env_state["cwd"], "stdout": "", "stderr": "Mission Complete.", "current_phase": env_state["current_phase"]}
-        return {"observation": obs, "reward": 0.0, "done": True, "info": {}}
+    env.step(action)
 
-    cmd = action.command
-    target = action.target
-    env_state["stdout"] = ""
-    env_state["stderr"] = ""
-    step_reward = -0.01
+    return {
+        "observation": {
+            "cwd": env.cwd,
+            "stdout": env.stdout,
+            "stderr": env.stderr,
+            "current_phase": env.current_phase
+        },
+        "reward": float(env.reward),
+        "done": env.done,
+        "info": {
+            "total_reward": env.total_reward
+        }
+    }
 
-    target_path = posixpath.normpath(posixpath.join(env_state["cwd"], target or "")).lstrip('/')
 
-    if cmd == "ls":
-        node = _get_fs_node(target_path, filesystem)
-        if isinstance(node, dict) and "content" not in node:
-            env_state["stdout"] = "\n".join([k for k in node.keys() if k != "metadata"])
-        else: env_state["stderr"] = f"ls: {target}: No such directory"
+@app.get("/state")
+def state():
+    return {
+        "cwd": env.cwd,
+        "stdout": env.stdout,
+        "stderr": env.stderr,
+        "current_phase": env.current_phase,
+        "total_reward": env.total_reward,
+        "done": env.done
+    }
 
-    elif cmd == "cd":
-        node = _get_fs_node(target_path, filesystem)
-        if isinstance(node, dict) and "content" not in node:
-            env_state["cwd"] = "/" + target_path
-        else: env_state["stderr"] = f"cd: {target}: Directory not found"
 
-    elif cmd == "cat":
-        node = _get_fs_node(target_path, filesystem)
-        if isinstance(node, dict) and "content" in node:
-            env_state["stdout"] = str(node["content"])
-        else: env_state["stderr"] = f"cat: {target}: Path is a directory or does not exist."
+# -------------------------
+# TASKS ENDPOINT
+# -------------------------
+@app.get("/tasks")
+def tasks():
+    return [
+        {"id": "phase_1", "difficulty": "easy"},
+        {"id": "phase_2", "difficulty": "easy"},
+        {"id": "phase_3", "difficulty": "medium"},
+        {"id": "phase_4", "difficulty": "medium"},
+        {"id": "phase_5", "difficulty": "medium"},
+        {"id": "phase_6", "difficulty": "hard"},
+    ]
 
-    elif cmd == "submit_flag":
-        try:
-            expected = expected_flags[env_state["current_phase"]]
-            if target == expected:
-                step_reward = 0.99
-                env_state["current_phase"] += 1
-                env_state["stdout"] = f"[SUCCESS] Step {env_state['current_phase']}/6 complete."
-                if env_state["current_phase"] >= 6: env_state["done"] = True
-            else:
-                env_state["stderr"] = "SUBMISSION FAILED: Invalid flag."
-        except IndexError: pass
 
-    obs = {"cwd": env_state["cwd"], "stdout": env_state["stdout"], "stderr": env_state["stderr"], "current_phase": env_state["current_phase"]}
-    return {"observation": obs, "reward": step_reward, "done": env_state["done"], "info": {}}
+# -------------------------
+# GRADER ENDPOINT
+# -------------------------
+@app.post("/grader")
+def grader(req: GradeRequest):
+    state = req.state or {}
 
+    if req.task_id == "phase_1":
+        score = grade_phase_1(state)
+    elif req.task_id == "phase_2":
+        score = grade_phase_2(state)
+    elif req.task_id == "phase_3":
+        score = grade_phase_3(state)
+    elif req.task_id == "phase_4":
+        score = grade_phase_4(state)
+    elif req.task_id == "phase_5":
+        score = grade_phase_5(state)
+    elif req.task_id == "phase_6":
+        score = grade_phase_6(state)
+    else:
+        score = 0.01
+
+    # 🔒 Clamp strictly between (0,1)
+    if score <= 0.0:
+        score = 0.01
+    if score >= 1.0:
+        score = 0.99
+
+    return {"score": float(score)}
+
+
+# -------------------------
+# MAIN ENTRYPOINT (IMPORTANT)
+# -------------------------
 def main():
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
 if __name__ == "__main__":
     main()
