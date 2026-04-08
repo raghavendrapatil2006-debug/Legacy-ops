@@ -3,11 +3,12 @@ name = "cyberqa"
 version = "1.0.0"
 description = "CyberQA Legacy Ops"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "fastapi",
     "uvicorn",
-    "pydantic"
+    "pydantic",
+    "openenv-core>=0.2.0"
 ]
 
 [project.scripts]
