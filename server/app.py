@@ -85,16 +85,23 @@ with gr.Blocks(title="CyberQA Agentic Environment", css=".gradio-container {max-
             with gr.Row():
                 step_btn = gr.Button("Step", variant="primary")
                 reset_btn = gr.Button("Reset", variant="secondary")
-                get_state_btn = gr.Button("Get state", variant="secondary")  # <-- RESTORED
+                get_state_btn = gr.Button("Get state", variant="secondary")
             status_text = gr.Markdown("Waiting...")
             output_box = gr.Code(label="JSON response", language="json", interactive=False, lines=12)
             
     step_btn.click(fn=execute_step_ui, inputs=[action_input], outputs=[header, status_text, output_box])
     reset_btn.click(fn=reset_env_ui, inputs=[], outputs=[header, status_text, output_box])
-    get_state_btn.click(fn=get_state_ui, inputs=[], outputs=[status_text, output_box]) # <-- WIRED UP
+    get_state_btn.click(fn=get_state_ui, inputs=[], outputs=[status_text, output_box])
     demo.load(fn=reset_env_ui, inputs=[], outputs=[header, status_text, output_box])
 
 app = gr.mount_gradio_app(app, demo, path="/")
 
-if __name__ == "__main__":
+# ==========================================
+# OPENENV SERVER LAUNCHER (CRITICAL FIX)
+# ==========================================
+def main():
+    """Required main function for OpenEnv multi-mode deployment"""
     uvicorn.run(app, host="0.0.0.0", port=7860)
+
+if __name__ == "__main__":
+    main()
