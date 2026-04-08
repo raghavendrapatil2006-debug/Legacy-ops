@@ -1,34 +1,35 @@
+spec_version: 1
 name: cyberqa
-version: "1.0.0"
-description: "CyberQA Incident Response Environment"
+type: space
+runtime: fastapi
 
 tasks:
-  - id: "task_1"
-    name: "Task 1: Recon"
+  - id: "phase_1"
+    name: "Phase 1: Recon"
     score: 0.15
-    grader: "grader:grade_task_1"
+    grader: "grader:grade_phase_1"
 
-  - id: "task_2"
-    name: "Task 2: Crypto"
+  - id: "phase_2"
+    name: "Phase 2: Crypto"
     score: 0.15
-    grader: "grader:grade_task_2"
+    grader: "grader:grade_phase_2"
 
-  - id: "task_3"
-    name: "Task 3: Privilege"
+  - id: "phase_3"
+    name: "Phase 3: Privilege"
     score: 0.15
-    grader: "grader:grade_task_3"
+    grader: "grader:grade_phase_3"
 
-  - id: "task_4"
-    name: "Task 4: Integrity"
+  - id: "phase_4"
+    name: "Phase 4: Integrity"
     score: 0.15
-    grader: "grader:grade_task_4"
+    grader: "grader:grade_phase_4"
 
-  - id: "task_5"
-    name: "Task 5: Hardening"
+  - id: "phase_5"
+    name: "Phase 5: Hardening"
     score: 0.15
-    grader: "grader:grade_task_5"
+    grader: "grader:grade_phase_5"
 
-  - id: "task_6"
-    name: "Task 6: Purge"
+  - id: "phase_6"
+    name: "Phase 6: Purge"
     score: 0.15
-    grader: "grader:grade_task_6"
+    grader: "grader:grade_phase_6"
