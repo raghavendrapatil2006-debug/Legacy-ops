@@ -6,14 +6,17 @@ tasks:
   - id: "task_1_discovery"
     name: "Task 1: Discovery"
     description: "Locate the auth flag and decode the payload."
-    grader: "src.grader.grade_task_1"
+    score: 0.33
+    grader: "src.grader:grade_task_1"
 
   - id: "task_2_remediation"
     name: "Task 2: Remediation"
     description: "Inspect root session env and restore corrupted nginx.conf."
-    grader: "src.grader.grade_task_2"
+    score: 0.33
+    grader: "src.grader:grade_task_2"
 
   - id: "task_3_cleanup"
     name: "Task 3: Cleanup"
     description: "Lock down /etc/shadow and quarantine sysupdater malware."
-    grader: "src.grader.grade_task_3"
+    score: 0.34
+    grader: "src.grader:grade_task_3"

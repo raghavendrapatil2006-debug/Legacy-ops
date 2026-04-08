@@ -2,7 +2,6 @@ import json
 import posixpath
 import base64
 from src.models import AgentAction
-from src.grader import grade_task_1, grade_task_2, grade_task_3
 
 class LegacyOpsEnv:
     def __init__(self, config_path="assets/campaign_config.json"):
@@ -63,10 +62,11 @@ class LegacyOpsEnv:
         target = getattr(action, "target", "")
         
         self.stdout, self.stderr = "", ""
+        
+        # 🟢 Give 0.01 points for every forward step / standard action taken
+        step_reward = 0.01  
+        
         target_path = posixpath.normpath(posixpath.join(self.cwd, target or "")).lstrip('/')
-
-        # Calculate score BEFORE action
-        prev_score = grade_task_1(self) + grade_task_2(self) + grade_task_3(self)
 
         if cmd == "ls":
             node = self._get_fs_node(target_path)
@@ -121,11 +121,18 @@ class LegacyOpsEnv:
                 
                 if self.current_phase == 3 and not self.nginx_restored:
                     self.stderr = "VALIDATION FAILED: nginx.conf state still corrupted."
+                    step_reward = 0.0 # No points for failing constraints
                 elif self.current_phase == 4 and not self.shadow_secured:
                     self.stderr = "VALIDATION FAILED: /etc/shadow vulnerable."
+                    step_reward = 0.0
                 elif self.current_phase == 5 and not self.malware_removed:
                     self.stderr = "VALIDATION FAILED: Malware 'sysupdater' still active."
+                    step_reward = 0.0
+                
                 elif target == expected_flag:
+                    # 🟢 Give exactly 0.99 points for a correct answer
+                    step_reward = 0.99  
+                    
                     self.current_phase += 1
                     self.stdout = f"[SUCCESS] Step {self.current_phase}/6 complete."
                     if self.current_phase >= 6:
@@ -133,14 +140,14 @@ class LegacyOpsEnv:
                         self.done = True
                 else:
                     self.stderr = "SUBMISSION FAILED: Invalid flag."
+                    step_reward = 0.0 # No points for a wrong guess
             except IndexError:
                 self.stderr = "ERROR: All phases complete."
         else:
             if cmd not in ["grep", "hex_decode"]:
                 self.stderr = f"bash: {cmd}: command not found"
 
-        # Calculate score AFTER action to give agent the difference as a step reward
-        new_score = grade_task_1(self) + grade_task_2(self) + grade_task_3(self)
-        self.reward = new_score - prev_score 
-        self.total_reward = new_score
+        # Apply the rewards
+        self.reward = step_reward
+        self.total_reward += step_reward
         return self
