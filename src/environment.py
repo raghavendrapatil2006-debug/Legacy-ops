@@ -11,7 +11,7 @@ class LegacyOpsEnv:
         self.filesystem = self.config.get("filesystem", {})
         self.global_hint = self.config.get("global_hint", "System Breach Detected.")
         
-        # Hardcoded expected flags for the 6 internal steps
+        # Hardcoded expected flags matching openenv.yaml
         self.expected_flags = [
             "FLAG{fragmented_auth_bypassed}",    # Phase 0
             "FLAG{multi_layer_crypto_cracked}",  # Phase 1
@@ -63,7 +63,7 @@ class LegacyOpsEnv:
         target = getattr(action, "target", "")
         
         self.stdout, self.stderr = "", ""
-        step_reward = 0.0  # NO NEGATIVE PENALTIES AS REQUESTED
+        step_reward = 0.0  # SAFE SCORING: No negative penalties
         target_path = posixpath.normpath(posixpath.join(self.cwd, target or "")).lstrip('/')
 
         if cmd == "ls":
@@ -114,13 +114,13 @@ class LegacyOpsEnv:
             else: self.stderr = f"rm: cannot remove '{target}'"
 
         # ==========================================
-        # 3-TASK SCORING EVALUATION
+        # FLAG SUBMISSION LOGIC
         # ==========================================
         elif cmd == "submit_flag":
             try:
                 expected_flag = self.expected_flags[self.current_phase]
                 
-                # Check constraints
+                # Check narrative constraints
                 if self.current_phase == 3 and not self.nginx_restored:
                     self.stderr = "VALIDATION FAILED: nginx.conf state still corrupted."
                 elif self.current_phase == 4 and not self.shadow_secured:
@@ -129,19 +129,12 @@ class LegacyOpsEnv:
                     self.stderr = "VALIDATION FAILED: Malware 'sysupdater' still active."
                 
                 elif target == expected_flag:
+                    step_reward = 0.15 # Award exactly 0.15 as specified in openenv.yaml
                     self.current_phase += 1
                     self.stdout = f"[SUCCESS] Step {self.current_phase}/6 complete."
                     
-                    # AWARD POINTS BASED ON THE 3 TASKS
-                    if self.current_phase == 2:   # Finished Recon & Crypto
-                        step_reward = 0.33
-                        self.stdout += " TASK 1 (DISCOVERY) COMPLETE!"
-                    elif self.current_phase == 4: # Finished Privilege & Integrity
-                        step_reward = 0.33
-                        self.stdout += " TASK 2 (REMEDIATION) COMPLETE!"
-                    elif self.current_phase == 6: # Finished Hardening & Purge
-                        step_reward = 0.34
-                        self.stdout += " TASK 3 (CLEANUP) COMPLETE! 🏆 MISSION SECURED."
+                    if self.current_phase >= 6:
+                        self.stdout += " 🏆 MISSION SECURED."
                         self.done = True
                 else:
                     self.stderr = "SUBMISSION FAILED: Invalid flag."
