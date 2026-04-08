@@ -10,7 +10,6 @@ class Action(BaseModel):
     command: str = ""
     target: str = ""
 
-# The filesystem mapped perfectly to your 6 phases
 FILESYSTEM = {
     "vault": {"hidden_auth.txt": {"content": "FLAG{fragmented_auth_bypassed}"}},
     "var": {"log": {"syslog.bak": {"content": "RkxBR3ttdWx0aV9sYXllcl9jcnlwdG9fY3JhY2tlZH0="}}},
