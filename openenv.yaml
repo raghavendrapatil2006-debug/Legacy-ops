@@ -6,30 +6,24 @@ runtime: fastapi
 tasks:
   - id: "phase_1"
     name: "Phase 1: Recon"
-    score: 0.15
-    grader: "grader:grade_phase_1"
+    grader: "grade_phase_1"
 
   - id: "phase_2"
     name: "Phase 2: Crypto"
-    score: 0.15
-    grader: "grader:grade_phase_2"
+    grader: "grade_phase_2"
 
   - id: "phase_3"
     name: "Phase 3: Privilege"
-    score: 0.15
-    grader: "grader:grade_phase_3"
+    grader: "grade_phase_3"
 
   - id: "phase_4"
     name: "Phase 4: Integrity"
-    score: 0.15
-    grader: "grader:grade_phase_4"
+    grader: "grade_phase_4"
 
   - id: "phase_5"
     name: "Phase 5: Hardening"
-    score: 0.15
-    grader: "grader:grade_phase_5"
+    grader: "grade_phase_5"
 
   - id: "phase_6"
     name: "Phase 6: Purge"
-    score: 0.15
-    grader: "grader:grade_phase_6"
+    grader: "grade_phase_6"
