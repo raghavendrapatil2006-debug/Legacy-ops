@@ -1,3 +1,19 @@
-name: legacy-ops
+name: cyberqa
 version: "1.0.0"
-description: "Legacy Ops CTF Environment for Scaler Hackathon"
+description: "CyberQA Incident Response Environment"
+
+tasks:
+  - id: "task_1_discovery"
+    name: "Task 1: Discovery"
+    description: "Locate the auth flag and decode the multi-layer payload."
+    score: 0.33
+
+  - id: "task_2_remediation"
+    name: "Task 2: Remediation"
+    description: "Inspect root session env and restore corrupted nginx.conf."
+    score: 0.33
+
+  - id: "task_3_cleanup"
+    name: "Task 3: Cleanup"
+    description: "Lock down /etc/shadow and quarantine sysupdater malware."
+    score: 0.34

@@ -1,13 +1,6 @@
 {
+  "campaign_name": "Legacy Ops",
   "global_hint": "System Breach Detected. Multiple logs exist. Verify targets before acting.",
-  "tasks": [
-    "Phase 1 (Recon): Locate the initial fragmented auth flag hidden in the vault.",
-    "Phase 2 (Crypto): Extract and decode the multi-layer base64/hex payload from the syslog.",
-    "Phase 3 (Privilege): Inspect the system environment variables to secure the root session.",
-    "Phase 4 (Integrity): Restore the corrupted nginx.conf file using the clean backup.",
-    "Phase 5 (Hardening): Lock down the /etc/shadow file permissions to strict 600.",
-    "Phase 6 (Purge): Quarantine and permanently remove the 'sysupdater' malware binary."
-  ],
   "filesystem": {
     "etc": {
       "vault": { "fragment.txt": { "content": "FLAG{fragmented_auth_bypassed}" } },
@@ -23,12 +16,48 @@
     "mnt": { "backups": { "nginx_clean.conf": { "content": "listen 80;\nserver_name secure.local;" } } },
     "tmp": { "sysupdater": { "content": "ELF... malicious payload...", "metadata": {"is_malware": true} }, "safe_cache.tmp": { "content": "cache data..." } }
   },
-  "flags": {
-    "phase1": "FLAG{fragmented_auth_bypassed}",
-    "phase2": "FLAG{multi_layer_crypto_cracked}",
-    "phase3": "FLAG{root_environment_secured}",
-    "phase4": "FLAG{integrity_recovered}",
-    "phase5": "FLAG{access_control_restored}",
-    "phase6": "FLAG{threat_neutralized}"
-  }
+  "tasks": [
+    {
+      "task_id": "phase1",
+      "description": "Phase 1 (Recon): Locate the initial fragmented auth flag hidden in the vault.",
+      "grader": "exact_match",
+      "expected_output": "FLAG{fragmented_auth_bypassed}",
+      "score": 0.15
+    },
+    {
+      "task_id": "phase2",
+      "description": "Phase 2 (Crypto): Extract and decode the multi-layer base64/hex payload from the syslog.",
+      "grader": "exact_match",
+      "expected_output": "FLAG{multi_layer_crypto_cracked}",
+      "score": 0.15
+    },
+    {
+      "task_id": "phase3",
+      "description": "Phase 3 (Privilege): Inspect the system environment variables to secure the root session.",
+      "grader": "exact_match",
+      "expected_output": "FLAG{root_environment_secured}",
+      "score": 0.15
+    },
+    {
+      "task_id": "phase4",
+      "description": "Phase 4 (Integrity): Restore the corrupted nginx.conf file using the clean backup.",
+      "grader": "exact_match",
+      "expected_output": "FLAG{integrity_recovered}",
+      "score": 0.15
+    },
+    {
+      "task_id": "phase5",
+      "description": "Phase 5 (Hardening): Lock down the /etc/shadow file permissions to strict 600.",
+      "grader": "exact_match",
+      "expected_output": "FLAG{access_control_restored}",
+      "score": 0.15
+    },
+    {
+      "task_id": "phase6",
+      "description": "Phase 6 (Purge): Quarantine and permanently remove the 'sysupdater' malware binary.",
+      "grader": "exact_match",
+      "expected_output": "FLAG{threat_neutralized}",
+      "score": 0.15
+    }
+  ]
 }

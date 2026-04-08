@@ -1,3 +1,12 @@
+---
+title: CyberQA
+emoji: 🛡️
+colorFrom: blue
+colorTo: red
+sdk: docker
+pinned: false
+---
+
 # 🛡️ CyberQA: Autonomous Incident Response Benchmark
 
 Welcome to the **CyberQA Evaluation Environment** — an interactive, simulated Linux-style incident response benchmark designed to test an autonomous agent’s ability to reason, inspect system state, and take corrective actions across a multi-step security recovery workflow.
@@ -23,28 +32,32 @@ The benchmark is organized into **6 sequential phases**. Agents must deduce the 
 * **Format:** Commands must be issued in the expected structured JSON format: `{"command": "cmd", "target": "target"}`.
 * **Paths:** Tasks may require using absolute paths if relative paths do not resolve correctly.
 * **Progression:** The environment is stateful. Progression between phases depends on successfully completing the required remediation for the current stage.
-* **Anti-Reward Hacking:** The evaluation engine tracks state. Agents caught in repetitive, non-progressive action loops will receive 0 points. Destructive actions (e.g., deleting safe files) incur severe point penalties.
+* **Anti-Reward Hacking:** The evaluation engine tracks state. Agents caught in repetitive, non-progressive action loops will receive point deductions (-0.01). Destructive actions or hallucinated flags incur severe point penalties (-0.05).
 
 ---
 
 ## 💻 Technical Setup & Evaluation
 
 ### Repository Structure
-This project is structured to meet the strict requirements of the OpenEnv evaluation pipeline:
+This project is structured to meet the strict requirements of the OpenEnv multi-mode deployment pipeline:
 
 ```text
 legacy-ops-simulator/
 │
 ├── inference.py                # Main entry point for automated OpenEnv evaluation
-├── app.py                      # Interactive Gradio Dashboard (OpenEnv UI style)
-├── agent.py                    # Local Gemini 2.5/3 ReAct testing script
-├── requirements.txt            # Python dependencies
+├── pyproject.toml              # Strict OpenEnv multi-mode deployment config
+├── uv.lock                     # Validated dependency lockfile
+├── openenv.yaml                # Task and grader registration
+├── README.md                   # Human & UI Documentation
+├── AGENT_README.md             # Strict system prompt and rules for the AI
+│
+├── server/
+│   └── app.py                  # OpenEnv API endpoints & Interactive Gradio Dashboard
 │
 ├── assets/
 │   └── campaign_config.json    # Static filesystem state and task configurations
 │
 └── src/
     ├── environment.py          # Backend engine and strict state validation
-    ├── grader.py               # Weighted scoring and penalty anti-cheat logic
     ├── models.py               # Pydantic data structures
     └── utils.py                # Helper functions
