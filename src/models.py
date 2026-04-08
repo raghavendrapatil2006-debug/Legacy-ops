@@ -1,16 +1,41 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Dict
 
-class AgentAction(BaseModel):
-    """The strict schema the AI Agent must follow to interact with the system."""
-    command: str
-    target: Optional[str] = None
-    password: Optional[str] = None
 
+# -------------------------
+# ACTION (input from agent)
+# -------------------------
+class Action(BaseModel):
+    command: str = ""
+    target: str = ""
+
+
+# -------------------------
+# OBSERVATION (state output)
+# -------------------------
 class Observation(BaseModel):
-    """The state of the environment returned to the AI Agent after every step."""
     cwd: str
     stdout: str
     stderr: str
-    done: bool
+    current_phase: int
+
+    # 🔥 IMPORTANT (for grader)
+    tasks_completed: Dict[str, bool]
+
+
+# -------------------------
+# STEP RESPONSE (optional, but clean)
+# -------------------------
+class StepResponse(BaseModel):
+    observation: Observation
     reward: float
+    done: bool
+    info: Dict
+
+
+# -------------------------
+# RESET RESPONSE (optional)
+# -------------------------
+class ResetResponse(BaseModel):
+    observation: Observation
+    info: Dict

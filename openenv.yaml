@@ -1,25 +1,61 @@
 name: cyberqa
 version: "1.0.0"
-description: CyberQA Legacy Ops
+openenv_version: "0.2.0"
+description: Legacy Ops cyber recovery simulator
 
-endpoints:
-  health: /
-  reset: /reset
-  step: /step
-  state: /state
-  tasks: /tasks
-  grader: /grader
+observation_type: src.models.Observation
+action_type: src.models.Action
+reward_type: float
+
+max_episode_steps: 20
 
 tasks:
-  - id: phase_1
-    description: Recover the first authentication flag
-  - id: phase_2
-    description: Decode the crypto flag
-  - id: phase_3
-    description: Find the root environment flag
-  - id: phase_4
-    description: Restore nginx integrity
-  - id: phase_5
-    description: Secure shadow access control
-  - id: phase_6
-    description: Remove malware and neutralize threat
+  - name: phase1
+    description: Locate the initial fragmented auth flag hidden in the vault.
+    max_steps: 10
+    grader:
+      module: grader
+      function: grade_phase1
+
+  - name: phase2
+    description: Extract and decode the multi-layer base64/hex payload from the syslog.
+    max_steps: 12
+    grader:
+      module: grader
+      function: grade_phase2
+
+  - name: phase3
+    description: Inspect the system environment variables to secure the root session.
+    max_steps: 10
+    grader:
+      module: grader
+      function: grade_phase3
+
+  - name: phase4
+    description: Restore the corrupted nginx.conf file using the clean backup.
+    max_steps: 12
+    grader:
+      module: grader
+      function: grade_phase4
+
+  - name: phase5
+    description: Lock down the /etc/shadow file permissions to strict 600.
+    max_steps: 10
+    grader:
+      module: grader
+      function: grade_phase5
+
+  - name: phase6
+    description: Quarantine and permanently remove the sysupdater malware binary.
+    max_steps: 12
+    grader:
+      module: grader
+      function: grade_phase6
+
+grader:
+  module: grader
+  function: grade_phase1
+
+agent:
+  baseline: inference.py
+  type: llm-agent

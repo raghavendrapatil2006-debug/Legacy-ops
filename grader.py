@@ -1,30 +1,25 @@
-def _safe_grade(required_phase: int, state=None) -> float:
-    try:
-        current_phase = int((state or {}).get("current_phase", 0))
-        if current_phase >= required_phase:
-            return 0.99
+def _clamp(score: float) -> float:
+    if score <= 0.0:
         return 0.01
-    except Exception:
-        return 0.01
+    if score >= 1.0:
+        return 0.99
+    return float(score)
 
 
-def _make_task_grader(required_phase: int):
-    def grader(state=None) -> float:
-        return _safe_grade(required_phase, state)
-    return grader
+def grade_phase1(obs, **kwargs):
+    return _clamp(0.99 if obs.get("tasks_completed", {}).get("phase1") else 0.01)
 
+def grade_phase2(obs, **kwargs):
+    return _clamp(0.99 if obs.get("tasks_completed", {}).get("phase2") else 0.01)
 
-GRADERS = {
-    "phase_1": _make_task_grader(1),
-    "phase_2": _make_task_grader(2),
-    "phase_3": _make_task_grader(3),
-    "phase_4": _make_task_grader(4),
-    "phase_5": _make_task_grader(5),
-    "phase_6": _make_task_grader(6),
-}
+def grade_phase3(obs, **kwargs):
+    return _clamp(0.99 if obs.get("tasks_completed", {}).get("phase3") else 0.01)
 
+def grade_phase4(obs, **kwargs):
+    return _clamp(0.99 if obs.get("tasks_completed", {}).get("phase4") else 0.01)
 
-def get_grader(task_name: str):
-    if task_name not in GRADERS:
-        raise KeyError(f"No grader found for task: {task_name}")
-    return GRADERS[task_name]
+def grade_phase5(obs, **kwargs):
+    return _clamp(0.99 if obs.get("tasks_completed", {}).get("phase5") else 0.01)
+
+def grade_phase6(obs, **kwargs):
+    return _clamp(0.99 if obs.get("tasks_completed", {}).get("phase6") else 0.01)

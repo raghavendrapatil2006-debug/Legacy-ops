@@ -1,40 +1,44 @@
-# tasks.py
-
 TASKS = [
     {
-        "id": "phase_1",
+        "id": "phase1",
         "name": "Phase 1: Recon",
-        "description": "Recover the first authentication flag",
+        "description": "Locate the initial fragmented auth flag hidden in the vault.",
         "difficulty": "easy",
+        "max_steps": 10,
     },
     {
-        "id": "phase_2",
+        "id": "phase2",
         "name": "Phase 2: Crypto",
-        "description": "Decode the crypto flag",
+        "description": "Extract and decode the multi-layer base64/hex payload from the syslog.",
         "difficulty": "easy",
+        "max_steps": 12,
     },
     {
-        "id": "phase_3",
+        "id": "phase3",
         "name": "Phase 3: Privilege",
-        "description": "Find the root environment flag",
+        "description": "Inspect the system environment variables to secure the root session.",
         "difficulty": "medium",
+        "max_steps": 10,
     },
     {
-        "id": "phase_4",
+        "id": "phase4",
         "name": "Phase 4: Integrity",
-        "description": "Restore nginx integrity",
+        "description": "Restore the corrupted nginx.conf file using the clean backup.",
         "difficulty": "medium",
+        "max_steps": 12,
     },
     {
-        "id": "phase_5",
+        "id": "phase5",
         "name": "Phase 5: Hardening",
-        "description": "Secure shadow access control",
+        "description": "Lock down the /etc/shadow file permissions to strict 600.",
         "difficulty": "medium",
+        "max_steps": 10,
     },
     {
-        "id": "phase_6",
+        "id": "phase6",
         "name": "Phase 6: Purge",
-        "description": "Remove malware and neutralize threat",
+        "description": "Quarantine and permanently remove the sysupdater malware binary.",
         "difficulty": "hard",
+        "max_steps": 12,
     },
 ]

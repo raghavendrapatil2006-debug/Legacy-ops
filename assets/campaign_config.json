@@ -3,18 +3,48 @@
   "global_hint": "System Breach Detected. Multiple logs exist. Verify targets before acting.",
   "filesystem": {
     "etc": {
-      "vault": { "fragment.txt": { "content": "FLAG{fragmented_auth_bypassed}" } },
-      "nginx": { "nginx.conf": { "content": "listen 80;\n# CORRUPTED", "metadata": {"permissions": "644"} } },
-      "shadow": { "content": "root:$6$...:19000:0:99999:7:::", "metadata": {"permissions": "777"} }
+      "vault": {
+        "fragment.txt": {
+          "content": "FLAG{fragmented_auth_bypassed}"
+        }
+      },
+      "nginx": {
+        "nginx.conf": {
+          "content": "listen 80;\n# CORRUPTED",
+          "metadata": { "permissions": "644" }
+        }
+      },
+      "shadow": {
+        "content": "root:$6$...:19000:0:99999:7:::",
+        "metadata": { "permissions": "777" }
+      }
     },
     "var": {
       "log": {
-        "auth.log": { "content": "SYSTEM_ALERT_PAYLOAD: REVDT1lfRkFLRV9GTEFHX0lHTk9SRQ==" },
-        "syslog.txt": { "content": "08:08 SYSTEM_ALERT_PAYLOAD: NDY0YzQxNDc3YjZkNzU2Yzc0Njk1ZjZjNjE3OTY1NzI1ZjYzNzI3OTcwNzQ2ZjVmNjM3MjYxNjM2YjY1NjQ3ZA==\n" }
+        "auth.log": {
+          "content": "SYSTEM_ALERT_PAYLOAD: REVDT1lfRkFLRV9GTEFHX0lHTk9SRQ=="
+        },
+        "syslog.txt": {
+          "content": "08:08 SYSTEM_ALERT_PAYLOAD: NDY0YzQxNDc3YjZkNzU2Yzc0Njk1ZjZjNjE3OTY1NzI1ZjYzNzI3OTcwNzQ2ZjVmNjM3MjYxNjM2YjY1NjQ3ZA==\n"
+        }
       }
     },
-    "mnt": { "backups": { "nginx_clean.conf": { "content": "listen 80;\nserver_name secure.local;" } } },
-    "tmp": { "sysupdater": { "content": "ELF... malicious payload...", "metadata": {"is_malware": true} }, "safe_cache.tmp": { "content": "cache data..." } }
+    "mnt": {
+      "backups": {
+        "nginx_clean.conf": {
+          "content": "listen 80;\nserver_name secure.local;"
+        }
+      }
+    },
+    "tmp": {
+      "sysupdater": {
+        "content": "ELF... malicious payload...",
+        "metadata": { "is_malware": true }
+      },
+      "safe_cache.tmp": {
+        "content": "cache data..."
+      }
+    }
   },
   "tasks": [
     {
