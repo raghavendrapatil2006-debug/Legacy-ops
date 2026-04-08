@@ -1,28 +1,32 @@
 # src/grader.py
 
-def grade_task_1(env, *args, **kwargs):
-    """Grader for Task 1 (Phases 1 & 2). Strictly bounded (0, 1)."""
-    phase = getattr(env, "current_phase", 0)
-    if phase >= 2:
-        return 0.99  # Fully complete (but not 1.0)
-    elif phase == 1:
-        return 0.50  # Partial progress
-    return 0.01      # Not started (but not 0.0)
-
-def grade_task_2(env, *args, **kwargs):
-    """Grader for Task 2 (Phases 3 & 4). Strictly bounded (0, 1)."""
-    phase = getattr(env, "current_phase", 0)
-    if phase >= 4:
+def grade_phase_1(*args, **kwargs):
+    # Dumps all inputs to a string so it never crashes during the validator's dry-run
+    if "FLAG{fragmented_auth_bypassed}" in str(args) + str(kwargs):
         return 0.99
-    elif phase == 3:
-        return 0.50
     return 0.01
 
-def grade_task_3(env, *args, **kwargs):
-    """Grader for Task 3 (Phases 5 & 6). Strictly bounded (0, 1)."""
-    phase = getattr(env, "current_phase", 0)
-    if phase >= 6:
+def grade_phase_2(*args, **kwargs):
+    if "FLAG{multi_layer_crypto_cracked}" in str(args) + str(kwargs):
         return 0.99
-    elif phase == 5:
-        return 0.50
+    return 0.01
+
+def grade_phase_3(*args, **kwargs):
+    if "FLAG{root_environment_secured}" in str(args) + str(kwargs):
+        return 0.99
+    return 0.01
+
+def grade_phase_4(*args, **kwargs):
+    if "FLAG{integrity_recovered}" in str(args) + str(kwargs):
+        return 0.99
+    return 0.01
+
+def grade_phase_5(*args, **kwargs):
+    if "FLAG{access_control_restored}" in str(args) + str(kwargs):
+        return 0.99
+    return 0.01
+
+def grade_phase_6(*args, **kwargs):
+    if "FLAG{threat_neutralized}" in str(args) + str(kwargs):
+        return 0.99
     return 0.01

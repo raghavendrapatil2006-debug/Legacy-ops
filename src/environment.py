@@ -33,6 +33,10 @@ class LegacyOpsEnv:
         self.nginx_restored = False
         self.shadow_secured = False
         self.malware_removed = False
+        
+        # 🟢 NEW: Memory to track previous actions and prevent repeated penalties
+        self.action_history = set() 
+        
         return self
 
     def _get_fs_node(self, path):
@@ -63,8 +67,11 @@ class LegacyOpsEnv:
         
         self.stdout, self.stderr = "", ""
         
-        # 🟢 Give 0.01 points for every forward step / standard action taken
-        step_reward = 0.01  
+        # Create a unique fingerprint for this exact action in this exact state
+        action_signature = f"{self.current_phase}|{self.cwd}|{cmd}|{target}"
+        
+        # Standard penalty
+        step_reward = -0.01  
         
         target_path = posixpath.normpath(posixpath.join(self.cwd, target or "")).lstrip('/')
 
@@ -121,18 +128,16 @@ class LegacyOpsEnv:
                 
                 if self.current_phase == 3 and not self.nginx_restored:
                     self.stderr = "VALIDATION FAILED: nginx.conf state still corrupted."
-                    step_reward = 0.0 # No points for failing constraints
+                    step_reward = -0.05
                 elif self.current_phase == 4 and not self.shadow_secured:
                     self.stderr = "VALIDATION FAILED: /etc/shadow vulnerable."
-                    step_reward = 0.0
+                    step_reward = -0.05
                 elif self.current_phase == 5 and not self.malware_removed:
                     self.stderr = "VALIDATION FAILED: Malware 'sysupdater' still active."
-                    step_reward = 0.0
+                    step_reward = -0.05
                 
                 elif target == expected_flag:
-                    # 🟢 Give exactly 0.99 points for a correct answer
                     step_reward = 0.99  
-                    
                     self.current_phase += 1
                     self.stdout = f"[SUCCESS] Step {self.current_phase}/6 complete."
                     if self.current_phase >= 6:
@@ -140,14 +145,19 @@ class LegacyOpsEnv:
                         self.done = True
                 else:
                     self.stderr = "SUBMISSION FAILED: Invalid flag."
-                    step_reward = 0.0 # No points for a wrong guess
+                    step_reward = -0.05
             except IndexError:
                 self.stderr = "ERROR: All phases complete."
         else:
             if cmd not in ["grep", "hex_decode"]:
                 self.stderr = f"bash: {cmd}: command not found"
 
-        # Apply the rewards
+        # 🟢 NEW: Deduplicate the reward. If we've done this exact thing before, 0 points.
+        if action_signature in self.action_history:
+            step_reward = 0.0
+        else:
+            self.action_history.add(action_signature)
+
         self.reward = step_reward
         self.total_reward += step_reward
         return self

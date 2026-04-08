@@ -16,12 +16,7 @@ class StepAction(BaseModel):
 @app.post("/reset")
 def api_reset():
     obs = env.reset()
-    obs_dict = {
-        "cwd": getattr(obs, "cwd", "/"),
-        "stdout": getattr(obs, "stdout", ""),
-        "stderr": getattr(obs, "stderr", ""),
-        "current_phase": getattr(env, "current_phase", 0)
-    }
+    obs_dict = {"cwd": getattr(obs, "cwd", "/"), "stdout": getattr(obs, "stdout", ""), "stderr": getattr(obs, "stderr", ""), "current_phase": getattr(env, "current_phase", 0)}
     return {"observation": obs_dict, "info": {}}
 
 @app.post("/step")
@@ -29,30 +24,24 @@ def api_step(action: StepAction):
     agent_act = AgentAction(command=action.command, target=action.target)
     obs = env.step(agent_act, {"command": action.command, "target": action.target})
     
-    obs_dict = {
-        "cwd": getattr(obs, "cwd", "/"),
-        "stdout": getattr(obs, "stdout", ""),
-        "stderr": getattr(obs, "stderr", ""),
-        "current_phase": getattr(env, "current_phase", 0)
-    }
+    obs_dict = {"cwd": getattr(obs, "cwd", "/"), "stdout": getattr(obs, "stdout", ""), "stderr": getattr(obs, "stderr", ""), "current_phase": getattr(env, "current_phase", 0)}
     
-    return {
-        "observation": obs_dict,
-        "reward": float(getattr(obs, "reward", 0.0)),
-        "done": getattr(obs, "done", getattr(env, "done", False)),
-        "info": {}
-    }
+    return {"observation": obs_dict, "reward": float(getattr(obs, "reward", 0.0)), "done": getattr(obs, "done", getattr(env, "done", False)), "info": {}}
 
 MISSION_README = """
-### 🎯 THE 3 MAIN TASKS (Graded via Custom Python)
-**TASK 1: DISCOVERY** (Phase 1 & 2)
-**TASK 2: REMEDIATION** (Phase 3 & 4)
-**TASK 3: CLEANUP** (Phase 5 & 6)
+### 🎯 THE 6 TASKS
+1. **Recon:** Locate the auth flag in the vault.
+2. **Crypto:** Decode the payload in the logs.
+3. **Privilege:** Inspect root session environment.
+4. **Integrity:** Restore nginx.conf from backup.
+5. **Hardening:** Lock down /etc/shadow.
+6. **Purge:** Remove sysupdater malware.
 
 ### ⚠️ RULES & SCORING
 * **Progression:** Submit flags using `{"command": "submit_flag", "target": "FLAG{...}"}`.
-* **Task Evaluation:** Backend graders use strict boundaries (0.01 to 0.99) to validate the environment for the Phase 2 judges.
-* **In-Game Rewards:** To encourage exploration, every valid command you run awards **+0.01** points. Submitting a correct flag awards **+0.99** points.
+* **Exploration Cost:** Every standard command costs **-0.01** points.
+* **Penalty:** Submitting a wrong flag costs **-0.05** points.
+* **Reward:** A correct flag awards **+0.99** points.
 """
 
 def execute_step_ui(action_json_str):
@@ -61,52 +50,26 @@ def execute_step_ui(action_json_str):
         act = AgentAction(command=action_json.get("command", ""), target=action_json.get("target", ""))
         obs = env.step(act, action_json)
         
-        obs_dict = {
-            "cwd": getattr(obs, "cwd", "/"),
-            "stdout": getattr(obs, "stdout", ""),
-            "stderr": getattr(obs, "stderr", "")
-        }
+        obs_dict = {"cwd": getattr(obs, "cwd", "/"), "stdout": getattr(obs, "stdout", ""), "stderr": getattr(obs, "stderr", "")}
         
         step_reward = float(getattr(obs, "reward", 0.0))
         total_score = float(getattr(env, "total_reward", 0.0))
         done = getattr(obs, "done", getattr(env, "done", False))
         
-        raw_response = {
-            "observation": obs_dict, 
-            "step_reward": step_reward, 
-            "total_score": total_score, 
-            "done": done
-        }
+        raw_response = {"observation": obs_dict, "step_reward": step_reward, "total_score": total_score, "done": done}
         
         header_text = f"**Total Score:** {total_score:.2f} &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** {done}"
         return header_text, "Step complete.", json.dumps(raw_response, indent=2)
     except Exception as e:
-        header_text = "**Total Score:** 0.00 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False"
-        return header_text, "Error.", json.dumps({"error": str(e)}, indent=2)
+        return "**Total Score:** 0.00 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False", "Error.", json.dumps({"error": str(e)}, indent=2)
 
 def reset_env_ui():
     obs = env.reset()
-    obs_dict = {
-        "cwd": getattr(obs, "cwd", "/"),
-        "stdout": getattr(obs, "stdout", ""),
-        "stderr": getattr(obs, "stderr", "")
-    }
-    
-    raw_response = {
-        "observation": obs_dict,
-        "total_score": 0.0,
-        "done": False
-    }
-    
-    header_text = "**Total Score:** 0.00 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False"
-    return header_text, "Environment reset.", json.dumps(raw_response, indent=2)
+    obs_dict = {"cwd": getattr(obs, "cwd", "/"), "stdout": getattr(obs, "stdout", ""), "stderr": getattr(obs, "stderr", "")}
+    return "**Total Score:** 0.00 &nbsp;&nbsp;|&nbsp;&nbsp; **Done:** False", "Environment reset.", json.dumps({"observation": obs_dict, "total_score": 0.0, "done": False}, indent=2)
 
 def get_state_ui():
-    state_info = {
-        "info": "Current environment state fetched.",
-        "current_phase": getattr(env, "current_phase", 0),
-        "total_score": float(getattr(env, "total_reward", 0.0))
-    }
+    state_info = {"info": "Current environment state fetched.", "current_phase": getattr(env, "current_phase", 0), "total_score": float(getattr(env, "total_reward", 0.0))}
     return "State retrieved.", json.dumps(state_info, indent=2)
 
 with gr.Blocks(title="CyberQA Agentic Environment", css=".gradio-container {max-width: 1500px !important;}") as demo:
@@ -132,7 +95,6 @@ with gr.Blocks(title="CyberQA Agentic Environment", css=".gradio-container {max-
 app = gr.mount_gradio_app(app, demo, path="/")
 
 def main():
-    """Required main function for OpenEnv multi-mode deployment"""
     uvicorn.run(app, host="0.0.0.0", port=7860)
 
 if __name__ == "__main__":

@@ -3,20 +3,32 @@ version: "1.0.0"
 description: "CyberQA Incident Response Environment"
 
 tasks:
-  - id: "task_1_discovery"
-    name: "Task 1: Discovery"
-    description: "Locate the auth flag and decode the payload."
-    score: 0.33
-    grader: "src.grader:grade_task_1"
+  - id: "phase_1"
+    name: "Phase 1: Recon"
+    grader: "src.grader.grade_phase_1"
+    score: 0.15
 
-  - id: "task_2_remediation"
-    name: "Task 2: Remediation"
-    description: "Inspect root session env and restore corrupted nginx.conf."
-    score: 0.33
-    grader: "src.grader:grade_task_2"
+  - id: "phase_2"
+    name: "Phase 2: Crypto"
+    grader: "src.grader.grade_phase_2"
+    score: 0.15
 
-  - id: "task_3_cleanup"
-    name: "Task 3: Cleanup"
-    description: "Lock down /etc/shadow and quarantine sysupdater malware."
-    score: 0.34
-    grader: "src.grader:grade_task_3"
+  - id: "phase_3"
+    name: "Phase 3: Privilege"
+    grader: "src.grader.grade_phase_3"
+    score: 0.15
+
+  - id: "phase_4"
+    name: "Phase 4: Integrity"
+    grader: "src.grader.grade_phase_4"
+    score: 0.15
+
+  - id: "phase_5"
+    name: "Phase 5: Hardening"
+    grader: "src.grader.grade_phase_5"
+    score: 0.15
+
+  - id: "phase_6"
+    name: "Phase 6: Purge"
+    grader: "src.grader.grade_phase_6"
+    score: 0.15
