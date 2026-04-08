@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from src.environment import LegacyOpsEnv
 from grader import get_grader
-from src.task import TASKS
+from src.tasks import TASKS
 
 app = FastAPI(title="CyberQA API")
 
