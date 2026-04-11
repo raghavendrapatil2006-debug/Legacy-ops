@@ -8,40 +8,47 @@ tasks:
     name: "Phase 1: Reconnaissance"
     description: "Analyze the virtual environment and extract the initial system signature."
     difficulty: "easy"
-    score: 0.16
+    score: 0.14
     grader: "grader:grade_phase_1"
 
   - id: "phase_2"
     name: "Phase 2: Cryptographic Reversal"
     description: "Locate and decode the obfuscated backup file."
     difficulty: "easy"
-    score: 0.16
+    score: 0.14
     grader: "grader:grade_phase_2"
 
   - id: "phase_3"
     name: "Phase 3: Privilege Validation"
     description: "Navigate to the restricted root directory to verify access controls."
     difficulty: "medium"
-    score: 0.16
+    score: 0.14
     grader: "grader:grade_phase_3"
 
   - id: "phase_4"
     name: "Phase 4: Integrity Restoration"
     description: "Identify corrupted web server configurations and restore from clean backups."
     difficulty: "medium"
-    score: 0.16
+    score: 0.14
     grader: "grader:grade_phase_4"
 
   - id: "phase_5"
     name: "Phase 5: System Hardening"
     description: "Modify file permissions on the shadow credential file to prevent unauthorized access."
     difficulty: "medium"
-    score: 0.16
+    score: 0.14
     grader: "grader:grade_phase_5"
 
   - id: "phase_6"
     name: "Phase 6: Threat Neutralization"
     description: "Locate and permanently delete the unauthorized sysupdater binary."
     difficulty: "hard"
-    score: 0.16
+    score: 0.14
     grader: "grader:grade_phase_6"
+
+  - id: "phase_7"
+    name: "Phase 7: Media Forensics"
+    description: "Use 'vidscan' on the quarantined video in /mnt/quarantine to detect AI signatures, extract the attacker's origin IP, and block it by appending it to /etc/firewall/blacklist.conf using 'echo'."
+    difficulty: "hard"
+    score: 0.16
+    grader: "grader:grade_phase_7"
